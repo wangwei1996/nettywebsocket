@@ -5,6 +5,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
 import io.netty.channel.group.ChannelGroup;
+import io.netty.channel.group.ChannelGroupFuture;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http.websocketx.*;
@@ -19,6 +20,8 @@ import java.util.List;
 
 /**
  * WebSocket 服务端Handler
+ *
+ * @author wei
  */
 public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> {
 
@@ -54,6 +57,13 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
     private WebSocketServerHandshaker webSocketServerHandshaker;
 
 
+    /**
+     * 要求：不阻塞当前io线程
+     *
+     * @param channelHandlerContext
+     * @param o
+     * @throws Exception
+     */
     @Override
     protected void channelRead0(ChannelHandlerContext channelHandlerContext, Object o) throws Exception {
         if (o instanceof FullHttpRequest) {
@@ -68,12 +78,12 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
     private void handlerHttpRequest(ChannelHandlerContext channelHandlerContext, FullHttpRequest httpRequest) {
         WebSocketServerHandler.log.info("=================>{}", "HTTP 请求");
         if (httpRequest.decoderResult().isFailure()) {
-            this.sendHttpResponse(channelHandlerContext, httpRequest, new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.BAD_REQUEST));
+            sendHttpResponse(channelHandlerContext, httpRequest, new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.BAD_REQUEST));
             return;
         }
 
         if (httpRequest.method() != HttpMethod.GET) {
-            this.sendHttpResponse(channelHandlerContext, httpRequest, new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.FORBIDDEN));
+            sendHttpResponse(channelHandlerContext, httpRequest, new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.FORBIDDEN));
             return;
         }
 
@@ -101,9 +111,19 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
         } else if (socketFrame instanceof TextWebSocketFrame) {  // 文本数据
             String mess = ((TextWebSocketFrame) socketFrame).text();
             WebSocketServerHandler.log.info("文本消息: {}------{}", mess, channelHandlerContext.channel().id());
-
             //广播给所有人
-            WebSocketServerHandler.CHANNELS.writeAndFlush(new TextWebSocketFrame(channelHandlerContext.channel().id() + "发来消息: " + mess));
+            ChannelGroupFuture channelFutures = WebSocketServerHandler.CHANNELS.writeAndFlush(new TextWebSocketFrame(channelHandlerContext.channel().id() + "发来消息: " + mess));
+            channelFutures.addListener(new ChannelFutureListener() {
+                @Override
+                public void operationComplete(ChannelFuture channelFuture) throws Exception {
+                    if (channelFuture.isSuccess()) {
+                        System.err.println("发送成功");
+                        return;
+                    }
+
+                    System.err.println("发送失败");
+                }
+            });
         } else if (socketFrame instanceof PingWebSocketFrame) { //Ping消息
             channelHandlerContext.write(new PongWebSocketFrame(socketFrame.content().retain()));
         } else if (socketFrame instanceof PongWebSocketFrame) {//Pong 消息

@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * WebSocket 服务端
+ * @author wei
  */
 public class WebSocketServer {
 
@@ -18,7 +19,10 @@ public class WebSocketServer {
      */
     private static final int PORT = 9999;
 
-    //启动Netty服务端
+    /**
+     * 启动Netty服务端
+     * @param args
+     */
     public static void main(String[] args) {
         NioEventLoopGroup bossGroup = new NioEventLoopGroup(1);
         NioEventLoopGroup workerGroup = new NioEventLoopGroup();
