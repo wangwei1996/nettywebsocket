@@ -11,9 +11,6 @@ import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http.websocketx.*;
 import io.netty.util.CharsetUtil;
-import io.netty.util.Timeout;
-import io.netty.util.Timer;
-import io.netty.util.TimerTask;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -84,10 +80,12 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
             Map.Entry<String, ChannelHandler> next = iterator.next();
             System.err.println("======>>>>" + next.getValue().getClass());
         }
+        //WebSocket连接握手发送的http请求
         if (o instanceof FullHttpRequest) {
             WebSocketServerHandler.log.info("FullHttpRequest: ------->");
             handlerHttpRequest(channelHandlerContext, (FullHttpRequest) o);
         } else if (o instanceof WebSocketFrame) {
+            //WebSocket连接已经建立了
             WebSocketServerHandler.log.info("WebSocketFrame: ------->");
             handlerWebSocketFrame(channelHandlerContext, (WebSocketFrame) o);
         }
@@ -120,14 +118,18 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
     }
 
     private void handlerWebSocketFrame(ChannelHandlerContext channelHandlerContext, WebSocketFrame socketFrame) {
-
-        if (socketFrame instanceof CloseWebSocketFrame) {//关闭请求
+        //关闭请求
+        if (socketFrame instanceof CloseWebSocketFrame) {
             this.webSocketServerHandshaker.close(channelHandlerContext.channel(), ((CloseWebSocketFrame) socketFrame).retain());
-        } else if (socketFrame instanceof BinaryWebSocketFrame) {//二进制数据
+
+        } else if (socketFrame instanceof BinaryWebSocketFrame) {
+            //二进制数据
             channelHandlerContext.write(socketFrame.retain());
-        } else if (socketFrame instanceof ContinuationWebSocketFrame) {//包含二进制数据或者文本数据
+        } else if (socketFrame instanceof ContinuationWebSocketFrame) {
+            //包含二进制数据或者文本数据
             channelHandlerContext.write(socketFrame.retain());
-        } else if (socketFrame instanceof TextWebSocketFrame) {  // 文本数据
+        } else if (socketFrame instanceof TextWebSocketFrame) {
+            // 文本数据
             String mess = ((TextWebSocketFrame) socketFrame).text();
             WebSocketServerHandler.log.info("文本消息: {}------{}", mess, channelHandlerContext.channel().id());
             //广播给所有人
@@ -143,10 +145,12 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
                     System.err.println("发送失败");
                 }
             });
-        } else if (socketFrame instanceof PingWebSocketFrame) { //Ping消息
+        } else if (socketFrame instanceof PingWebSocketFrame) {
+            //Ping消息
             channelHandlerContext.write(new PongWebSocketFrame(socketFrame.content().retain()));
             System.err.println("客户端发来Ping消息");
-        } else if (socketFrame instanceof PongWebSocketFrame) {//Pong 消息
+        } else if (socketFrame instanceof PongWebSocketFrame) {
+            //Pong 消息
             System.err.println("客户端发来Pong消息");
             channelHandlerContext.write(new PingWebSocketFrame(socketFrame.content().retain()));
         } else {
@@ -178,5 +182,6 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         super.exceptionCaught(ctx, cause);
         WebSocketServerHandler.log.error("异常信息: {}", cause.getMessage());
+        ctx.close();
     }
 }
