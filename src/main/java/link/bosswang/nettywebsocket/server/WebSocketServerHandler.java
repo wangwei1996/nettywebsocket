@@ -6,10 +6,14 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.ChannelGroupFuture;
+import io.netty.channel.group.ChannelGroupFutureListener;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http.websocketx.*;
 import io.netty.util.CharsetUtil;
+import io.netty.util.Timeout;
+import io.netty.util.Timer;
+import io.netty.util.TimerTask;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +21,9 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
 
 /**
  * WebSocket 服务端Handler
@@ -71,6 +78,12 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
      */
     @Override
     protected void channelRead0(ChannelHandlerContext channelHandlerContext, Object o) throws Exception {
+        ChannelPipeline pipeline = channelHandlerContext.channel().pipeline();
+        Iterator<Map.Entry<String, ChannelHandler>> iterator = pipeline.iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<String, ChannelHandler> next = iterator.next();
+            System.err.println("======>>>>" + next.getValue().getClass());
+        }
         if (o instanceof FullHttpRequest) {
             WebSocketServerHandler.log.info("FullHttpRequest: ------->");
             handlerHttpRequest(channelHandlerContext, (FullHttpRequest) o);
@@ -101,8 +114,9 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
             return;
         }
 
-        this.webSocketServerHandshaker.handshake(channelHandlerContext.channel(), httpRequest);
-        WebSocketServerHandler.SERVER_CHANNEL.add(channelHandlerContext.channel());
+        ChannelFuture handshake = this.webSocketServerHandshaker.handshake(channelHandlerContext.channel(), httpRequest);
+        Channel wsChannel = channelHandlerContext.channel();
+        WebSocketServerHandler.SERVER_CHANNEL.add(wsChannel);
     }
 
     private void handlerWebSocketFrame(ChannelHandlerContext channelHandlerContext, WebSocketFrame socketFrame) {
@@ -118,10 +132,10 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
             WebSocketServerHandler.log.info("文本消息: {}------{}", mess, channelHandlerContext.channel().id());
             //广播给所有人
             ChannelGroupFuture channelFutures = WebSocketServerHandler.CHANNELS.writeAndFlush(new TextWebSocketFrame(channelHandlerContext.channel().id() + "发来消息: " + mess));
-            channelFutures.addListener(new ChannelFutureListener() {
+            channelFutures.addListener(new ChannelGroupFutureListener() {
                 @Override
-                public void operationComplete(ChannelFuture channelFuture) throws Exception {
-                    if (channelFuture.isSuccess()) {
+                public void operationComplete(ChannelGroupFuture channelFutures) throws Exception {
+                    if (channelFutures.isSuccess()) {
                         System.err.println("发送成功");
                         return;
                     }
@@ -131,7 +145,9 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
             });
         } else if (socketFrame instanceof PingWebSocketFrame) { //Ping消息
             channelHandlerContext.write(new PongWebSocketFrame(socketFrame.content().retain()));
+            System.err.println("客户端发来Ping消息");
         } else if (socketFrame instanceof PongWebSocketFrame) {//Pong 消息
+            System.err.println("客户端发来Pong消息");
             channelHandlerContext.write(new PingWebSocketFrame(socketFrame.content().retain()));
         } else {
             throw new RuntimeException("未知消息");
