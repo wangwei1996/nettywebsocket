@@ -148,8 +148,8 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
             });*/
             // channelHandlerContext.writeAndFlush(socketFrame.retain());
             //将消息传递给下一个InboundHandler
-          //  channelHandlerContext.fireChannelRead(socketFrame.retain());
-            channelHandlerContext.channel().writeAndFlush(socketFrame);
+           // channelHandlerContext.fireChannelRead(socketFrame.retain());
+            channelHandlerContext.channel().writeAndFlush(socketFrame.retain());
 
         } else if (socketFrame instanceof PingWebSocketFrame) {
             //Ping消息
