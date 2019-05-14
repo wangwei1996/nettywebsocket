@@ -8,6 +8,7 @@ import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.ChannelGroupFuture;
 import io.netty.channel.group.ChannelGroupFutureListener;
 import io.netty.channel.group.DefaultChannelGroup;
+import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http.websocketx.*;
 import io.netty.util.CharsetUtil;
@@ -133,7 +134,7 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
             String mess = ((TextWebSocketFrame) socketFrame).text();
             WebSocketServerHandler.log.info("文本消息: {}------{}", mess, channelHandlerContext.channel().id());
             //广播给所有人
-            ChannelGroupFuture channelFutures = WebSocketServerHandler.CHANNELS.writeAndFlush(new TextWebSocketFrame(channelHandlerContext.channel().id() + "发来消息: " + mess));
+           /* ChannelGroupFuture channelFutures = WebSocketServerHandler.CHANNELS.writeAndFlush(new TextWebSocketFrame(channelHandlerContext.channel().id() + "发来消息: " + mess));
             channelFutures.addListener(new ChannelGroupFutureListener() {
                 @Override
                 public void operationComplete(ChannelGroupFuture channelFutures) throws Exception {
@@ -144,7 +145,12 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
 
                     System.err.println("发送失败");
                 }
-            });
+            });*/
+            // channelHandlerContext.writeAndFlush(socketFrame.retain());
+            //将消息传递给下一个InboundHandler
+          //  channelHandlerContext.fireChannelRead(socketFrame.retain());
+            channelHandlerContext.channel().writeAndFlush(socketFrame);
+
         } else if (socketFrame instanceof PingWebSocketFrame) {
             //Ping消息
             channelHandlerContext.write(new PongWebSocketFrame(socketFrame.content().retain()));
