@@ -23,8 +23,8 @@
             <textarea class="edit-mess-textarea" v-model="mess">{{ mess }}</textarea>
 
             <div class="send-button">
-                <el-button type="primary" style="margin-right: 20px;" @click="uploadFile()"><input type="file"
-                                                                                                   id="fileUpload">发送文件</input>
+                <el-button type="primary" style="margin-right: 20px;"><input type="file" @change="uploadFile()"
+                                                                             id="fileUpload">发送文件</input>
                 </el-button>
                 <el-button type="primary" @click="createMess()">发送</el-button>
             </div>

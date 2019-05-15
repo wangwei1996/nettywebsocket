@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartRequest;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
@@ -29,9 +30,10 @@ public class FileUploadController {
 
 
     @RequestMapping(value = "/nolimit")
+    @ResponseBody
     public Map<String, Object> uploadFile(HttpServletRequest request) {
         URL resource = Thread.currentThread().getContextClassLoader().getResource(".");
-        String ABSOLUTE_PATH = (resource.getPath() + "static/webapp/resources/upload/").substring(1);
+        String ABSOLUTE_PATH = (resource.getPath() + "static/webapp/resources/upload/");
         System.err.println(ABSOLUTE_PATH);
         Map<String, Object> map = new LinkedHashMap<>(10);
         MultipartRequest fileRequest = null;

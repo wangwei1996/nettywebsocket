@@ -23,6 +23,8 @@ public class FileOperatonUtils {
      * @return 文件名
      */
     public static String saveFile(String name, String path, InputStream in) {
+        FileOperatonUtils.mkdirPath(path);
+
         File file = new File(path + name);
 
         OutputStream out = null;
@@ -51,6 +53,18 @@ public class FileOperatonUtils {
         }
 
         return name;
+    }
+
+    /**
+     * 递归产生保存文件的文件夹
+     *
+     * @param path
+     */
+    private static void mkdirPath(String path) {
+        File file = new File(path);
+        if (!file.exists()) {
+            file.mkdirs();
+        }
     }
 }
 
