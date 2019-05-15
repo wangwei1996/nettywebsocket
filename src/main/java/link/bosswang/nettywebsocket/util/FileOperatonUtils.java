@@ -23,13 +23,13 @@ public class FileOperatonUtils {
      * @return 文件名
      */
     public static String saveFile(String name, String path, InputStream in) {
-        name += UUID.randomUUID();
         File file = new File(path + name);
-        if (file.exists()) {
-            return null;
-        }
+
         OutputStream out = null;
         try {
+            if (!file.exists()) {
+                file.createNewFile();
+            }
             out = new BufferedOutputStream(new FileOutputStream(file));
             byte[] buff = new byte[4096];
             int count = 0;

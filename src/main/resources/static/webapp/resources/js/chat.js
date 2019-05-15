@@ -3,7 +3,8 @@ window.onload = function (ev) {
         el: '#app',
         data: {
             socket: createWebSocket(),
-            mess: ""
+            mess: "",
+            fileList: []
         },
         methods: {
             createMess: function () {
@@ -16,17 +17,16 @@ window.onload = function (ev) {
                 this.socket.send(this.mess);
                 this.mess = '';
             },
-            handleRemove:function(file, fileList) {
-                console.log(file, fileList);
-            },
-            handlePreview:function(file) {
-                console.log(file);
-            },
-            handleExceed:function(files, fileList) {
-                this.$message.warning('当前限制选择 3 个文件，本次选择了 ${files.length} 个文件，共选择了 ${files.length + fileList.length} 个文件');
-            },
-            beforeRemove:function(file, fileList) {
-                return this.$confirm('确定移除 ${ file.name }？');
+            uploadFile: function () {
+                var file = document.getElementById("fileUpload").files[0];
+                var formData = new FormData();
+                formData.append("uploadFile", file);
+                axios.post('/uploadfile/nolimit', formData).then(function (response) {
+                    console.log(response)
+                })
+                    .catch(function (reason) {
+                        console.log(reason)
+                    });
             }
         }
     });

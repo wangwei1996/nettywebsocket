@@ -31,7 +31,7 @@ public class FileUploadController {
     @RequestMapping(value = "/nolimit")
     public Map<String, Object> uploadFile(HttpServletRequest request) {
         URL resource = Thread.currentThread().getContextClassLoader().getResource(".");
-        String ABSOLUTE_PATH = resource.getPath() + "/static/webapp/resources/upload/";
+        String ABSOLUTE_PATH = (resource.getPath() + "static/webapp/resources/upload/").substring(1);
         System.err.println(ABSOLUTE_PATH);
         Map<String, Object> map = new LinkedHashMap<>(10);
         MultipartRequest fileRequest = null;
@@ -49,7 +49,7 @@ public class FileUploadController {
         String fileName = null;
         try {
             inputStream = uploadFile.getInputStream();
-            fileName = FileOperatonUtils.saveFile(uploadFile.getName(), ABSOLUTE_PATH, inputStream);
+            fileName = FileOperatonUtils.saveFile(uploadFile.getOriginalFilename(), ABSOLUTE_PATH, inputStream);
             map.put("success", true);
             map.put("url", FileUploadController.RELATIVE_PATH + fileName);
         } catch (IOException e) {
