@@ -1,4 +1,4 @@
-package link.bosswang.nettywebsocket.server;
+package link.bosswang.nettywebsocket.netty.server;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;

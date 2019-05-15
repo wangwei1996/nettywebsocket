@@ -1,4 +1,4 @@
-package link.bosswang.nettywebsocket.server;
+package link.bosswang.nettywebsocket.netty.server;
 
 
 import io.netty.buffer.ByteBuf;
@@ -26,12 +26,12 @@ public class HeartBeatHandler extends ChannelInboundHandlerAdapter {
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         if (evt instanceof IdleStateEvent) {
             //如果是超时事件
-            log.error("太长时间没有交流了,关闭连接");
+            log.error("太长时间没有交流了");
             ctx.writeAndFlush(HEARTBEAT_SEQUENCE.duplicate()).addListener(ChannelFutureListener.CLOSE_ON_FAILURE);
             return;
         }
 
         //如果不是IdleStateEvent事件，就让他传递到下一个InboundHandler
-        super.userEventTriggered(ctx, evt);
+        ctx.fireUserEventTriggered(evt);
     }
 }

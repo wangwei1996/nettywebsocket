@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>聊天室</title>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <!--本页面css文件-->
+    <link rel="stylesheet" href="/resources/css/chat.css"/>
+</head>
+<body>
+
+<div id="app">
+    <el-container>
+        <el-header id="room-name">WebSocket聊天室</el-header>
+
+        <el-main>
+            <div id="mess-show">
+            </div>
+        </el-main>
+
+        <el-footer>
+            <textarea class="edit-mess-textarea" v-model="mess">{{ mess }}</textarea>
+            <div>
+                <el-upload
+                        class="upload-demo"
+                        action="https://jsonplaceholder.typicode.com/posts/"
+                        :on-preview="handlePreview"
+                        :on-remove="handleRemove"
+                        :before-remove="beforeRemove"
+                        multiple
+                        :limit="3"
+                        :on-exceed="handleExceed"
+                        :file-list="fileList">
+                    <el-button size="small" type="primary">点击上传</el-button>
+                    <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
+                </el-upload>
+            </div>
+
+            <div class="send-button">
+                <el-button type="primary" @click="createMess()">发送</el-button>
+            </div>
+        </el-footer>
+    </el-container>
+</div>
+</body>
+
+<!-- 开发环境版本，包含了有帮助的命令行警告 -->
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<!-- 引入组件库 -->
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<!-- 本地JS文件 -->
+<script src="/resources/js/chat.js"></script>
+</html>

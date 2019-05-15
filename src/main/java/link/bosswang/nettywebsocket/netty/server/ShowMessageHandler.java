@@ -1,4 +1,4 @@
-package link.bosswang.nettywebsocket.server;
+package link.bosswang.nettywebsocket.netty.server;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;

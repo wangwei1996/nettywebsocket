@@ -1,14 +1,11 @@
-package link.bosswang.nettywebsocket.server;
+package link.bosswang.nettywebsocket.netty.server;
 
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
 import io.netty.channel.group.ChannelGroup;
-import io.netty.channel.group.ChannelGroupFuture;
-import io.netty.channel.group.ChannelGroupFutureListener;
 import io.netty.channel.group.DefaultChannelGroup;
-import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http.websocketx.*;
 import io.netty.util.CharsetUtil;
@@ -16,9 +13,7 @@ import io.netty.util.concurrent.GlobalEventExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 
@@ -47,21 +42,19 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        super.channelActive(ctx);
-        WebSocketServerHandler.CHANNELS.add(ctx.channel());
+        //每当有一个新的用户添加到聊天室，就广播给大家
+        System.err.println("Hello 欢迎");
 
         Iterator<Channel> iterator = WebSocketServerHandler.CHANNELS.iterator();
+        System.err.println("Channels:  ");
         while (iterator.hasNext()) {
             Channel channel = iterator.next();
-            System.err.println("Channel id: " + channel.id());
+            System.out.println(channel.id());
         }
+        WebSocketServerHandler.CHANNELS.writeAndFlush(new TextWebSocketFrame("欢迎" + ctx.channel().id() + "加入聊天室"));
+        WebSocketServerHandler.CHANNELS.add(ctx.channel());
+        ctx.fireChannelActive();
     }
-
-    /**
-     * 保存Channel
-     */
-    private static final List<Channel> SERVER_CHANNEL = new ArrayList<>(10);
-
 
     private WebSocketServerHandshaker webSocketServerHandshaker;
 
@@ -115,7 +108,6 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
 
         ChannelFuture handshake = this.webSocketServerHandshaker.handshake(channelHandlerContext.channel(), httpRequest);
         Channel wsChannel = channelHandlerContext.channel();
-        WebSocketServerHandler.SERVER_CHANNEL.add(wsChannel);
     }
 
     private void handlerWebSocketFrame(ChannelHandlerContext channelHandlerContext, WebSocketFrame socketFrame) {
@@ -124,6 +116,7 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
             this.webSocketServerHandshaker.close(channelHandlerContext.channel(), ((CloseWebSocketFrame) socketFrame).retain());
 
         } else if (socketFrame instanceof BinaryWebSocketFrame) {
+            System.err.println(" 二进制消息: " + socketFrame.content().toString(CharsetUtil.UTF_8));
             //二进制数据
             channelHandlerContext.write(socketFrame.retain());
         } else if (socketFrame instanceof ContinuationWebSocketFrame) {
@@ -133,24 +126,18 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
             // 文本数据
             String mess = ((TextWebSocketFrame) socketFrame).text();
             WebSocketServerHandler.log.info("文本消息: {}------{}", mess, channelHandlerContext.channel().id());
-            //广播给所有人
-           /* ChannelGroupFuture channelFutures = WebSocketServerHandler.CHANNELS.writeAndFlush(new TextWebSocketFrame(channelHandlerContext.channel().id() + "发来消息: " + mess));
-            channelFutures.addListener(new ChannelGroupFutureListener() {
-                @Override
-                public void operationComplete(ChannelGroupFuture channelFutures) throws Exception {
-                    if (channelFutures.isSuccess()) {
-                        System.err.println("发送成功");
-                        return;
-                    }
-
-                    System.err.println("发送失败");
+            //消息群发
+            Iterator<Channel> channelIterator = WebSocketServerHandler.CHANNELS.iterator();
+            ChannelId id = channelHandlerContext.channel().id();
+            while (channelIterator.hasNext()) {
+                Channel channel = channelIterator.next();
+                if (channel.id().equals(id)) {
+                    //不给自己发消息
+                    continue;
                 }
-            });*/
-            // channelHandlerContext.writeAndFlush(socketFrame.retain());
-            //将消息传递给下一个InboundHandler
-           // channelHandlerContext.fireChannelRead(socketFrame.retain());
-            channelHandlerContext.channel().writeAndFlush(socketFrame.retain());
-
+                channel.writeAndFlush(
+                        new TextWebSocketFrame(channelHandlerContext.channel().id() + "," + ((TextWebSocketFrame) socketFrame).text()));
+            }
         } else if (socketFrame instanceof PingWebSocketFrame) {
             //Ping消息
             channelHandlerContext.write(new PongWebSocketFrame(socketFrame.content().retain()));

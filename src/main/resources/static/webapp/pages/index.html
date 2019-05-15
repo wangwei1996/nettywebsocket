@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Binary Message</title>
+</head>
+<body>
+    <h1>Hello World</h1>
+</body>
+
+<script type="text/javascript">
+    /**
+     * 根据字符串消息mess创建一个二进制消息(用于文件上传)
+     * @param mess(类型:String)
+     * @return  ArrayBuffer
+     */
+    function createMessByOwnPro(fileName, fileUrl) {
+
+        var mess = fileName + "<<*>>" + fileUrl;
+        return writeStringToArrayBuffer(mess);
+    }
+
+    /**
+     * 将字符串数据写入到ArrayBuffer中去
+     * @param fileName 需要写入的消息(字符串对象)
+     *
+     * @return ArrayBuffer 二进制消息 ArrayBuffer对象
+     */
+    function writeStringToArrayBuffer(mess) {
+
+        var buf = new ArrayBuffer(mess.length * 2);
+        var bufView = new Uint16Array(buf);
+        var strLen = mess.length;
+        for (var i = 0; i < strLen; i++) {
+            bufView[i] = mess.charCodeAt(i);
+        }
+
+        return buf;
+    }
+
+
+    /**
+     * 创建一个WebSocket连接
+     * @return {WebSocket}
+     */
+    function createWebSocket() {
+        var ss = new WebSocket("ws://127.0.0.1:9999/websocket");
+        ss.onopen = function (ev1) {
+            console.log("连接成功");
+        };
+
+        ss.onclose = function (ev1) {
+            console.log("close");
+        };
+
+        ss.onerror = function (ev1) {
+            console.log("error");
+        };
+        ss.onmessage = function (ev1) {
+            console.log(ev1.data);
+        };
+
+        return ss;
+    }
+
+</script>
+</html>
