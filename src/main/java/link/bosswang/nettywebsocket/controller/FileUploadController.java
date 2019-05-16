@@ -33,7 +33,7 @@ public class FileUploadController {
     @ResponseBody
     public Map<String, Object> uploadFile(HttpServletRequest request) {
         URL resource = Thread.currentThread().getContextClassLoader().getResource(".");
-        String ABSOLUTE_PATH = (resource.getPath() + "static/webapp/resources/upload/");
+        String ABSOLUTE_PATH = (resource.getPath().substring(1) + "static/webapp/resources/upload/");
         System.err.println(ABSOLUTE_PATH);
         Map<String, Object> map = new LinkedHashMap<>(10);
         MultipartRequest fileRequest = null;

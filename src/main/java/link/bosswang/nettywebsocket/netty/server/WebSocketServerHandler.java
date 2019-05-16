@@ -1,6 +1,7 @@
 package link.bosswang.nettywebsocket.netty.server;
 
 
+import com.alibaba.fastjson.JSONObject;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
@@ -14,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 
@@ -114,11 +116,38 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
         //关闭请求
         if (socketFrame instanceof CloseWebSocketFrame) {
             this.webSocketServerHandshaker.close(channelHandlerContext.channel(), ((CloseWebSocketFrame) socketFrame).retain());
-
         } else if (socketFrame instanceof BinaryWebSocketFrame) {
             System.err.println(" 二进制消息: " + socketFrame.content().toString(CharsetUtil.UTF_8));
             //二进制数据
-            channelHandlerContext.write(socketFrame.retain());
+            String mess = socketFrame.content().toString(CharsetUtil.UTF_8);
+            mess = mess.replaceAll("[\u0000]", "");
+            JSONObject json = JSONObject.parseObject(mess);
+            Map<String, Object> map = new LinkedHashMap<>(3);
+            String type = json.get("type").toString();
+            map.put("type", type);
+            map.put("url", json.get("url"));
+            map.put("user", channelHandlerContext.channel().id().toString());
+            switch (type) {
+                case "1": {
+                    Iterator<Channel> channelIterator = WebSocketServerHandler.CHANNELS.iterator();
+                    ChannelId id = channelHandlerContext.channel().id();
+                    while (channelIterator.hasNext()) {
+                        Channel channel = channelIterator.next();
+                        if (channel.id().equals(id)) {
+                            //不给自己发消息
+                            continue;
+                        }
+                        channel.writeAndFlush(
+                                new BinaryWebSocketFrame(Unpooled.copiedBuffer(JSONObject.toJSONString(map), CharsetUtil.UTF_8)));
+                    }
+                }
+                break;
+                case "3": {
+                    channelHandlerContext.writeAndFlush(new BinaryWebSocketFrame(Unpooled.copiedBuffer(JSONObject.toJSONString(map), CharsetUtil.UTF_8)));
+                }
+                break;
+            }
+
         } else if (socketFrame instanceof ContinuationWebSocketFrame) {
             //包含二进制数据或者文本数据
             channelHandlerContext.write(socketFrame.retain());
