@@ -34,7 +34,7 @@ public class WebSocketServerInitializer extends ChannelInitializer<SocketChannel
         pipeline.addLast("showMess", new ShowMessageHandler());
         pipeline.addLast("second", new SecondOutHandler());
         //当在180秒内没有接收或者发送任何数据，那么IdleStateHandler将会使用一个IdleStateEvent时间来调用fireUserEventTriggered方法
-        pipeline.addLast("TimeOutCheck", new IdleStateHandler(0, 0, 300, TimeUnit.SECONDS));
+        pipeline.addLast("TimeOutCheck", new IdleStateHandler(0, 0, 180, TimeUnit.SECONDS));
         //心跳处理
         pipeline.addLast("HeartBeat", new HeartBeatHandler());
     }

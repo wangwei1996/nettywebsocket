@@ -46,13 +46,6 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         //每当有一个新的用户添加到聊天室，就广播给大家
         System.err.println("Hello 欢迎");
-
-        Iterator<Channel> iterator = WebSocketServerHandler.CHANNELS.iterator();
-        System.err.println("Channels:  ");
-        while (iterator.hasNext()) {
-            Channel channel = iterator.next();
-            System.out.println(channel.id());
-        }
         WebSocketServerHandler.CHANNELS.writeAndFlush(new TextWebSocketFrame("欢迎" + ctx.channel().id() + "加入聊天室"));
         WebSocketServerHandler.CHANNELS.add(ctx.channel());
         ctx.fireChannelActive();
@@ -93,11 +86,12 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
             sendHttpResponse(channelHandlerContext, httpRequest, new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.BAD_REQUEST));
             return;
         }
-
-        if (httpRequest.method() != HttpMethod.GET) {
+        //当存在协议提升时才去进行协议提升，建立websocket连接,否则就返回错误
+        if (httpRequest.method() != HttpMethod.GET || !httpRequest.headers().contains("Upgrade")) {
             sendHttpResponse(channelHandlerContext, httpRequest, new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.FORBIDDEN));
             return;
         }
+
 
         WebSocketServerHandshakerFactory wsFactory = new WebSocketServerHandshakerFactory(WebSocketServerHandler.getWebSocketLocation(httpRequest),
                 null, true, 5 * 1024 * 1024);
