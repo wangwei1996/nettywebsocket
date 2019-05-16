@@ -101,7 +101,6 @@ function createWebSocket() {
     return socket;
 }
 
-
 function createMessImg(name, url) {
     var container = document.getElementById("mess-show");
     var temp = '<div class="message">' +
@@ -155,7 +154,6 @@ function reConnected() {
         try {
             var socket = createWebSocket();
             app.socket = socket;
-            //没连接成功，那么我就要让他一直阻塞在这里
             console.log(socket.readyState + "----" + WebSocket.OPEN);
             if (socket.readyState == WebSocket.OPEN) {
                 app.isOpen = true;
@@ -164,7 +162,6 @@ function reConnected() {
             }
         } catch (e) {
             console.log("重连发生错误: " + e)
-        } finally {
         }
     }, 2000);
 }

@@ -202,7 +202,7 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        super.exceptionCaught(ctx, cause);
         WebSocketServerHandler.log.error("异常信息: {}", cause.getMessage());
+        ctx.close();
     }
 }

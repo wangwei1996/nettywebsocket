@@ -24,6 +24,6 @@ public class ShowMessageHandler extends SimpleChannelInboundHandler<Object> {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         log.error("ShowMessageHandler 处理出现异常。异常信息: " + cause.getMessage());
-        return;
+        ctx.close();
     }
 }
