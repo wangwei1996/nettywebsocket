@@ -2,6 +2,9 @@ package link.bosswang.nettywebsocket.netty.outhandler;
 
 import io.netty.channel.*;
 
+/**
+ * @author wei
+ */
 public class SecondOutHandler extends ChannelOutboundHandlerAdapter {
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {

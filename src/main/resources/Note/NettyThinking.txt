@@ -1,0 +1,6 @@
+1:注意点
+   Handler添加的顺序和数据流转的方式
+   
+   OutboundHandler 对ChannelFuture.addListener的影响
+   
+   operationComplete 由谁去调用。
