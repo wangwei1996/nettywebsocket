@@ -10,6 +10,8 @@ import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http.websocketx.*;
 import io.netty.util.CharsetUtil;
+import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.GenericFutureListener;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -103,7 +105,14 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
         }
 
         ChannelFuture handshake = this.webSocketServerHandshaker.handshake(channelHandlerContext.channel(), httpRequest);
-        Channel wsChannel = channelHandlerContext.channel();
+        handshake.addListener(new GenericFutureListener<Future<? super Void>>() {
+            @Override
+            public void operationComplete(Future<? super Void> future) throws Exception {
+                if (!future.isSuccess()) {
+                    channelHandlerContext.close();
+                }
+            }
+        });
     }
 
     private void handlerWebSocketFrame(ChannelHandlerContext channelHandlerContext, WebSocketFrame socketFrame) {
