@@ -27,15 +27,15 @@ public class WebSocketServerInitializer extends ChannelInitializer<SocketChannel
         //aggregates an HttpMessage and its following HttpContents into a single FullHttpRequest or FullHttpResponse
         // (depending on if it used to handle requests or responses) with no following HttpContents
         pipeline.addLast(new HttpObjectAggregator(65535));
+        //当在180秒内没有接收或者发送任何数据，那么IdleStateHandler将会使用一个IdleStateEvent时间来调用fireUserEventTriggered方法
+        pipeline.addLast("TimeOutCheck", new IdleStateHandler(0, 0, 180, TimeUnit.SECONDS));
         //out
+        pipeline.addLast("second", new SecondOutHandler());
         pipeline.addLast("first", new FirstOutHandler());
         pipeline.addLast(new WebSocketServerHandler());
         //打印WebSocket消息
-        pipeline.addLast("showMess", new ShowMessageHandler());
-        pipeline.addLast("second", new SecondOutHandler());
-        //当在180秒内没有接收或者发送任何数据，那么IdleStateHandler将会使用一个IdleStateEvent时间来调用fireUserEventTriggered方法
-        pipeline.addLast("TimeOutCheck", new IdleStateHandler(0, 0, 180, TimeUnit.SECONDS));
+      //  pipeline.addLast("showMess", new ShowMessageHandler());
         //心跳处理
-        pipeline.addLast("HeartBeat", new HeartBeatHandler());
+     //   pipeline.addLast("HeartBeat", new HeartBeatHandler());
     }
 }

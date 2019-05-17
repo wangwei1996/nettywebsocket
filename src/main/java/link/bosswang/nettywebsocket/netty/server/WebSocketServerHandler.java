@@ -80,6 +80,13 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
             WebSocketServerHandler.log.info("WebSocketFrame: ------->");
             handlerWebSocketFrame(channelHandlerContext, (WebSocketFrame) o);
         }
+
+        channelHandlerContext.writeAndFlush(new TextWebSocketFrame("----------------------")).addListener(new ChannelFutureListener() {
+            @Override
+            public void operationComplete(ChannelFuture channelFuture) throws Exception {
+                System.out.println("====================================------------------------------");
+            }
+        });
     }
 
     private void handlerHttpRequest(ChannelHandlerContext channelHandlerContext, FullHttpRequest httpRequest) {
@@ -105,10 +112,11 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
         }
 
         ChannelFuture handshake = this.webSocketServerHandshaker.handshake(channelHandlerContext.channel(), httpRequest);
-        handshake.addListener(new GenericFutureListener<Future<? super Void>>() {
+        handshake.addListener(new ChannelFutureListener() {
             @Override
-            public void operationComplete(Future<? super Void> future) throws Exception {
-                if (!future.isSuccess()) {
+            public void operationComplete(ChannelFuture channelFuture) throws Exception {
+                System.out.println("=============================握手成功===================================");
+                if (!channelFuture.isSuccess()) {
                     channelHandlerContext.close();
                 }
             }
@@ -140,15 +148,24 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
                             //不给自己发消息
                             continue;
                         }
-                        channel.writeAndFlush(
+                        ChannelFuture channelFuture = channel.writeAndFlush(
                                 new BinaryWebSocketFrame(Unpooled.copiedBuffer(JSONObject.toJSONString(map), CharsetUtil.UTF_8)));
                     }
                 }
                 break;
                 case "3": {
-                    channelHandlerContext.writeAndFlush(new BinaryWebSocketFrame(Unpooled.copiedBuffer(JSONObject.toJSONString(map), CharsetUtil.UTF_8)));
+                    ChannelFuture channelFuture = channelHandlerContext.writeAndFlush(new BinaryWebSocketFrame(Unpooled.copiedBuffer(JSONObject.toJSONString(map), CharsetUtil.UTF_8)));
+                    channelFuture.addListener(new ChannelFutureListener() {
+                        @Override
+                        public void operationComplete(ChannelFuture channelFuture) throws Exception {
+                            System.out.println("心跳消息88888888888888888888888发送完成");
+                        }
+                    });
+                    System.out.println("**********************************************************");
                 }
                 break;
+                default:
+                    break;
             }
 
         } else if (socketFrame instanceof ContinuationWebSocketFrame) {
