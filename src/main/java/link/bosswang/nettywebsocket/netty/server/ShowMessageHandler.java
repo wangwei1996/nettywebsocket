@@ -4,6 +4,8 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
+import io.netty.util.Attribute;
+import io.netty.util.AttributeKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,8 +18,9 @@ public class ShowMessageHandler extends SimpleChannelInboundHandler<Object> {
 
     @Override
     protected void channelRead0(ChannelHandlerContext channelHandlerContext, Object o) throws Exception {
+        Attribute<String> id = channelHandlerContext.channel().attr(AttributeKey.<String>newInstance("id"));
         if (o instanceof WebSocketFrame) {
-            System.err.println("ShowMessageHandler =====> WebSocket 发来消息: " + ((TextWebSocketFrame) o).text());
+            System.err.println("ShowMessageHandler =====> WebSocket 发来消息: " + ((TextWebSocketFrame) o).text() + "id: " + id.get());
         }
     }
 

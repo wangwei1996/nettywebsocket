@@ -9,6 +9,8 @@ import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http.websocketx.*;
+import io.netty.util.Attribute;
+import io.netty.util.AttributeKey;
 import io.netty.util.CharsetUtil;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
@@ -27,6 +29,8 @@ import java.util.Map;
  * @author wei
  */
 public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> {
+
+    public static AttributeKey<String> ID = AttributeKey.<String>newInstance("id");
 
     private static final ChannelGroup CHANNELS = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
     private static final Logger log = LoggerFactory.getLogger(WebSocketServerHandler.class);
@@ -65,6 +69,8 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
      */
     @Override
     protected void channelRead0(ChannelHandlerContext channelHandlerContext, Object o) throws Exception {
+        Attribute<String> id = channelHandlerContext.channel().attr(ID);
+        System.err.println("WebsocketServerHandler : id:" + id.get());
         ChannelPipeline pipeline = channelHandlerContext.channel().pipeline();
         Iterator<Map.Entry<String, ChannelHandler>> iterator = pipeline.iterator();
         while (iterator.hasNext()) {

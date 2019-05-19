@@ -10,6 +10,7 @@ public class FirstOutHandler extends ChannelOutboundHandlerAdapter {
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
         System.out.println("FirstOutHandler =================> " + promise.toString() + "---" + ctx.toString());
         ChannelFuture channelFuture = ctx.writeAndFlush(msg);
+
         channelFuture.addListeners(new ChannelFutureListener() {
             @Override
             public void operationComplete(ChannelFuture channelFuture) throws Exception {
