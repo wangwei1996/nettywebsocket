@@ -23,3 +23,7 @@
   - class1.isAssignableFrom(class2) 判定此 Class 对象所表示的类或接口与指定的 Class 参数所表示的类或接口是否相同，或是否是其超类或超接口
     + class2是不是class1的子类或者子接口
     + Object是所有类的父类
+
+
+https://blog.csdn.net/qq_33862644/article/details/79337348
+https://www.jianshu.com/p/24a782466d25   
