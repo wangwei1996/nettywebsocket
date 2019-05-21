@@ -2,7 +2,7 @@
   + Netty是如何判断ChannelHandler的类型的 状态:ok AbstractChannelHandlerContext成员属性executionMask（4.0 -> 4.1 由inbound，outbound属性改变为由成员属性executionMask来表示）
   + 对于ChannelHandler的添加应该注意什么顺序 ok 
   + 用户手动触发事件传播，不同的触发方式有什么区别  ok 
-  + 异常的传播
+  + 异常的传播(最终是传递到TailContext)
 
 
 # 服务端
@@ -20,6 +20,11 @@
    
 # GoodThings
 + Java中isAssignableFrom的用法
-  - class1.isAssignableFrom(class2) 判定此 Class 对象所表示的类或接口与指定的 Class 参数所表示的类或接口是否相同，或是否是其超类或超接口
+  - class1.isAssignableFrom(class2) 判定此 Class 对象所表示的类或接口与指定的 Class 参数所表示的类或接口是否相同，或是否(class1)是其(class2)超类或超接口
     + class2是不是class1的子类或者子接口
     + Object是所有类的父类
+    
+    
+# 
++ DefaultSelectStrategyFactory 默认的选择策略
++ RejectedExecutionHandlers 线程池拒绝策略
