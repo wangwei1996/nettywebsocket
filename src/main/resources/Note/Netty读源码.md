@@ -9,6 +9,8 @@
  + 服务端Socket在哪里初始化 ok
  + 在哪里accept连接 ok
 
+# NioEventLoopGroup
++ poolName   nioEventLoopGroup(首字母小写) 线程组前缀:poolName + '-' + poolId.incrementAndGet() + '-'  nextId.incrementAndGet() ;
 # NioEventLoop  
    + NioEventLoop 创建;
    + NioEventLoop 启动
@@ -30,8 +32,25 @@
 + RejectedExecutionHandlers 线程池拒绝策略
 
 
-ThreadPerTaskExecutor
+ThreadPerTaskExecutor 是啥？什么作用
 FastThreadLocalThread
 
-# Class 
+# Class  为什么要自己实现，这与JDK自带的有什么不同
 FastThreadLocalThread extends Thread 
+InternalThreadLocalMap 
+
+
+线程组：
+线程组存在的意义，首要原因是安全。
+java默认创建的线程都是属于系统线程组，而同一个线程组的线程是可以相互修改对方的数据的。
+但如果在不同的线程组中，那么就不能“跨线程组”修改数据，可以从一定程度上保证数据安全.
+
+线程池：
+线程池存在的意义，首要作用是效率。
+线程的创建和结束都需要耗费一定的系统时间（特别是创建），不停创建和删除线程会浪费大量的时间。所以，在创建出一条线程并使其在执行完任务后不结束，而是使其进入休眠状态，在需要用时再唤醒，那么 就可以节省一定的时间。
+如果这样的线程比较多，那么就可以使用线程池来进行管理。保证效率。
+
+线程组和线程池共有的特点：
+1,都是管理一定数量的线程
+2,都可以对线程进行控制---包括休眠，唤醒，结束，创建，中断（暂停）--但并不一定包含全部这些操作。
+
