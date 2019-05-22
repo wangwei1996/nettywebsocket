@@ -28,3 +28,10 @@
 # 
 + DefaultSelectStrategyFactory 默认的选择策略
 + RejectedExecutionHandlers 线程池拒绝策略
+
+
+ThreadPerTaskExecutor
+FastThreadLocalThread
+
+# Class 
+FastThreadLocalThread extends Thread 
